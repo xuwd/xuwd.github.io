@@ -1,0 +1,18 @@
+version: "3.9"
+services:
+  clash:
+    image: dreamacro/clash-premium:latest
+    container_name: clash
+    restart: always
+    privileged: true
+    ports:
+      - 9090:9090
+    volumes:
+      - ./config.yaml:/root/.config/clash/config.yaml
+      - ./ui:/root/.config/clash/ui
+
+networks:
+  default:
+    external:
+      name: dev_network
+       
