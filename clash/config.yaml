@@ -1,0 +1,83 @@
+port: 7890
+socks-port: 7891
+redir-port: 7892
+mixed-port: 7893
+ipv6: false
+allow-lan: true
+mode: Rule
+log-level: info
+external-controller: '0.0.0.0:9090'
+external-ui: ui
+secret: ''
+tun:
+  enable: true
+  stack: system
+  dns-hijack:
+    - tcp://8.8.8.8:53
+    - udp://8.8.8.8:53
+dns:
+  enable: true
+  ipv6: false
+  listen: 0.0.0.0:53
+  default-nameserver:
+    - 114.114.114.114
+  #enhanced-mode: redir-host
+  enhanced-mode: fake-ip #如果要玩netflix，需要使用fake-ip
+  fake-ip-range: 198.18.0.1/16
+  nameserver:
+    - 114.114.114.114
+    - 223.5.5.5
+    - tls://8.8.8.8:853
+  fallback:
+    - tls://8.8.8.8:853
+
+# 两个代理服务器
+proxies:
+  # http
+  - name: "https01"
+    type: http
+    server: q.khoo.win
+    port: 443
+    username: kzfW4ioVqF0P
+    password: "vP-#_#WU19GWD}6]B6=e"
+    tls: true # https
+    skip-cert-verify: true
+
+# 配置 Group
+proxy-groups:
+  # 自动切换
+  - name: "auto"
+    type: url-test
+    proxies:
+      - https01
+    # tolerance: 150
+    url: 'https://www.google.com/'
+    interval: 300
+  # 按需选择 - 可以在UI上选择
+  - name: "netflix"
+    type: select
+    proxies:
+      - _https01
+
+rules:
+# LAN
+  - DOMAIN-SUFFIX,local,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT
+  - IP-CIDR,172.16.0.0/12,DIRECT
+  - IP-CIDR,192.168.0.0/16,DIRECT
+  - IP-CIDR,10.0.0.0/8,DIRECT
+
+# Netflix
+  - DOMAIN-SUFFIX,fast.com,netflix
+  - DOMAIN-SUFFIX,api-global.netflix.com,netflix
+  - DOMAIN-SUFFIX,netflix.com,netflix
+  - DOMAIN-SUFFIX,netflix.net,netflix
+  - DOMAIN-SUFFIX,nflxext.com,netflix
+  - DOMAIN-SUFFIX,nflximg.com,netflix
+  - DOMAIN-SUFFIX,nflximg.net,netflix
+  - DOMAIN-SUFFIX,nflxso.net,netflix
+  - DOMAIN-SUFFIX,nflxvideo.net,netflix
+
+# 最终规则（除了中国区的IP之外的，全部翻墙）
+  - GEOIP,CN,DIRECT
+  - MATCH,auto
